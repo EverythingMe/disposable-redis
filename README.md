@@ -1,10 +1,13 @@
-## Disposable-Redis
+# Disposable-Redis
 ## Create disposable instances of redis server on random ports
 
 This can be used for testing redis dependent code without having to make
 assumptions on if and where redis server is running, or fear of corrupting data
 
-Example:
+For full documentation see [http://godoc.org/github.com/EverythingMe/disposable-redis](http://godoc.org/github.com/EverythingMe/disposable-redis)
+
+
+## Example:
 
 ```go
 
