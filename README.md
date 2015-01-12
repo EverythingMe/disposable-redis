@@ -29,9 +29,9 @@ func ExampleServer() {
 	// we must remember to kill it at the end, or we'll have zombie redises
 	defer r.Stop()
 
-	// wait for our server to be ready for serving, for at least 5 ms.
+	// wait for our server to be ready for serving, for at least 50 ms.
 	// This gives redis time to initialize itself and listen
-	if err = r.WaitReady(5 * time.Millisecond); err != nil {
+	if err = r.WaitReady(50 * time.Millisecond); err != nil {
 		panic("Couldn't connect to instance")
 	}
 
