@@ -2,7 +2,10 @@
 ## Create disposable instances of redis server on random ports
 
 This can be used for testing redis dependent code without having to make
-assumptions on if and where redis server is running, or fear of corrupting data
+assumptions on if and where redis server is running, or fear of corrupting data.
+
+You just create a redis server instance, run your code against it as if it were a mock, and then remove it without a trace. 
+The only assumption here is that you have `redis-server` available in your path.
 
 For full documentation see [http://godoc.org/github.com/EverythingMe/disposable-redis](http://godoc.org/github.com/EverythingMe/disposable-redis)
 

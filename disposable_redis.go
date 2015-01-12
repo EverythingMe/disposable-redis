@@ -1,7 +1,9 @@
 // A utility to create disposable instances of redis server on random ports.
 //
 // This can be used for testing redis dependent code without having to make
-// assumptions on if and where redis server is running, or fear of corrupting data
+// assumptions on if and where redis server is running, or fear of corrupting data.
+// You create a redis server instance, run your code against it as if it were a mock,
+// and then remove it without a trace.
 package disposable_redis
 
 import (
@@ -14,9 +16,11 @@ import (
 	redigo "github.com/garyburd/redigo/redis"
 )
 
-const (
-	RedisCommand = "redis-server"
+// The redis executable. This allows you to set it if you're using a custom one.
+// Can be an absolute path, or an executable in your $PATH
+var RedisCommand = "redis-server"
 
+const (
 	MaxRetries = 10
 
 	//this is the amount of time we give the server to start itself up and start listening (or fail)
