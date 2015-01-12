@@ -152,9 +152,44 @@ func (r *Server) Stop() error {
 
 }
 
+// NewSlaveOf creates a new server with a random port and makes it a slave of the current server
+func (r Server) NewSlaveOf() (*Server, error) {
+
+	srv, err := NewServerRandomPort()
+	if err != nil {
+		return nil, err
+	}
+
+	if err = srv.WaitReady(100 * time.Millisecond); err != nil {
+		defer srv.Stop()
+		return nil, err
+	}
+
+	conn, e := redigo.Dial("tcp", srv.Addr())
+	if e != nil {
+		defer srv.Stop()
+		return nil, e
+	}
+	defer conn.Close()
+
+	_, err = conn.Do("SLAVEOF", "127.0.0.1", r.Port())
+	if err != nil {
+		defer srv.Stop()
+		return nil, err
+	}
+
+	return srv, nil
+
+}
+
 // Get the port of this server
 func (r Server) Port() uint16 {
 	return r.port
+}
+
+// Addr returns the address of the server as a host:port string
+func (r Server) Addr() string {
+	return fmt.Sprintf("localhost:%d", r.port)
 }
 
 func init() {

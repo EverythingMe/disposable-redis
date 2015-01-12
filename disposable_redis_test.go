@@ -62,6 +62,54 @@ func TestDisposableRedis(t *testing.T) {
 
 }
 
+func TestServerNewSlaveOf(t *testing.T) {
+
+	master, err := NewServerRandomPort()
+	if err != nil {
+		t.Fatal("Could not create random server")
+	}
+
+	defer master.Stop()
+
+	if err = master.WaitReady(50 * time.Millisecond); err != nil {
+		t.Fatalf("Could not connect to server in time")
+	}
+
+	slave, err := master.NewSlaveOf()
+	if err != nil {
+		t.Fatal("Could not create slave:", err)
+	}
+	defer slave.Stop()
+
+	conn, err := redigo.Dial("tcp", fmt.Sprintf(master.Addr()))
+	if err != nil {
+		t.Fatalf("Could not connect to disposable server", err)
+	}
+
+	if _, err := conn.Do("SET", "foo", "bar"); err != nil {
+		t.Fatalf("Could not talk to master")
+	}
+	conn.Close()
+
+	time.Sleep(2000 * time.Millisecond)
+
+	conn, err = redigo.Dial("tcp", fmt.Sprintf("localhost:%d", slave.Port()))
+	if err != nil {
+		t.Fatalf("Could not connect to slave server", err)
+	}
+	defer conn.Close()
+
+	val, err := redigo.String(conn.Do("GET", "foo"))
+	if err != nil {
+		t.Fatal("Could not stop server", err)
+	}
+
+	if val != "bar" {
+		t.Fatalf("Replication didn't work: ", val)
+	}
+
+}
+
 func ExampleServer() {
 
 	// create a new server on a random port
