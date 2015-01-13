@@ -183,7 +183,6 @@ func (r Server) Info() (map[string]string, error) {
 }
 
 // NewSlaveOf creates a new server with a random port and makes it a slave of the current server.
-// NOTE: This assumes your redis is
 func (r Server) NewSlaveOf() (*Server, error) {
 
 	srv, err := NewServerRandomPort()
