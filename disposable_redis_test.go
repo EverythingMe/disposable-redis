@@ -91,8 +91,6 @@ func TestServerNewSlaveOf(t *testing.T) {
 	}
 	conn.Close()
 
-	time.Sleep(2000 * time.Millisecond)
-
 	conn, err = redigo.Dial("tcp", fmt.Sprintf("localhost:%d", slave.Port()))
 	if err != nil {
 		t.Fatalf("Could not connect to slave server", err)

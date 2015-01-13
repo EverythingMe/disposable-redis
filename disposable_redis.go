@@ -11,6 +11,7 @@ import (
 	"log"
 	"math/rand"
 	"os/exec"
+	"strings"
 	"time"
 
 	redigo "github.com/garyburd/redigo/redis"
@@ -152,7 +153,37 @@ func (r *Server) Stop() error {
 
 }
 
-// NewSlaveOf creates a new server with a random port and makes it a slave of the current server
+// Info returns the value of the server's INFO command parsed into a map of strings
+func (r Server) Info() (map[string]string, error) {
+	conn, e := redigo.Dial("tcp", r.Addr())
+	if e != nil {
+		return nil, e
+	}
+	defer conn.Close()
+
+	info, err := redigo.String(conn.Do("INFO"))
+	if err != nil {
+		return nil, err
+	}
+
+	ret := make(map[string]string)
+	lines := strings.Split(info, "\r\n")
+	for _, line := range lines {
+		if len(line) == 0 || line[0] == '#' {
+			continue
+		}
+		kv := strings.Split(line, ":")
+
+		if len(kv) == 2 {
+			ret[kv[0]] = kv[1]
+		}
+	}
+
+	return ret, nil
+}
+
+// NewSlaveOf creates a new server with a random port and makes it a slave of the current server.
+// NOTE: This assumes your redis is
 func (r Server) NewSlaveOf() (*Server, error) {
 
 	srv, err := NewServerRandomPort()
@@ -176,6 +207,22 @@ func (r Server) NewSlaveOf() (*Server, error) {
 	if err != nil {
 		defer srv.Stop()
 		return nil, err
+	}
+
+	// wait for the slave to be in sync
+	for i := 0; i < 100; i++ {
+		info, err := srv.Info()
+		if err != nil {
+			defer srv.Stop()
+			return nil, err
+		}
+
+		linkStatus := info["master_link_status"]
+		if linkStatus == "up" {
+			break
+		}
+		time.Sleep(50 * time.Millisecond)
+
 	}
 
 	return srv, nil
