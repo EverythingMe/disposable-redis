@@ -39,7 +39,7 @@ func ExampleServer() {
 	}
 
 	//now we can just connect and talk to it
-	conn, err := redigo.Dial("tcp", fmt.Sprintf("localhost:%d", r.Port()))
+	conn, err := redigo.Dial("tcp", r.Addr())
 	if err != nil {
 		panic(err)
 	}
