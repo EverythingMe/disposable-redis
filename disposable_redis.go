@@ -12,6 +12,7 @@ import (
 	"math/rand"
 	"os/exec"
 	"strings"
+	"sync"
 	"time"
 
 	redigo "github.com/garyburd/redigo/redis"
@@ -33,6 +34,7 @@ type Server struct {
 	cmd     *exec.Cmd
 	port    uint16
 	running bool
+	wg      sync.WaitGroup
 }
 
 // Start and run the process, return an error if it cannot be run
@@ -43,7 +45,9 @@ func (r *Server) run() error {
 	ch := make(chan error)
 
 	// we wait for LaunchWaitTimeout and see if the server quit due to an error
+	r.wg.Add(1)
 	go func() {
+		defer r.wg.Done()
 		err := r.cmd.Wait()
 		select {
 		case ch <- err:
@@ -147,6 +151,7 @@ func (r *Server) Stop() error {
 		return err
 	}
 
+	r.wg.Wait()
 	r.cmd.Wait()
 
 	return nil
